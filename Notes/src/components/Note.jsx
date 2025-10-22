@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 function Note() {
   const [note, setNote] = useState("");
   const [addNote, setAddNote] = useState([]);
+  const [editText,setEditText] =useState(null)
 
   // ✅ Load notes from localStorage when component mounts
   useEffect(() => {
@@ -21,8 +22,16 @@ function Note() {
 
   const handleAddNote = () => {
     if (note.trim() === "") return alert("Please enter a note!");
-    const newNotes = [...addNote, note];
-    setAddNote(newNotes);
+    if(editText===null){
+
+      const newNotes = [...addNote, note];
+      setAddNote(newNotes);
+    }else{
+      const updateNotes = [...addNote]
+      updateNotes[editText] = note;
+      setAddNote(updateNotes)
+      setEditText(null)
+    }
     setNote(""); // clear input
   };
 
@@ -31,6 +40,16 @@ function Note() {
     setAddNote(updatedNotes);
   };
 
+  const handleKeyDown = (e)=>{
+    if(e.key==='Enter'){
+      handleAddNote()
+    }
+  }
+ 
+  const handelEdit = (index)=>{
+   setNote(addNote[index])
+   setEditText(index)
+  }
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-gray-900 rounded-2xl shadow-lg text-white">
       <h2 className="text-2xl font-bold text-center mb-4">📝 Notes App</h2>
@@ -41,9 +60,12 @@ function Note() {
           type="text"
           value={note}
           onChange={handleChange}
+          onKeyDown={handleKeyDown}
           placeholder="Write a note..."
-          className="border border-gray-600 p-2 rounded-lg flex-1 bg-gray-800 text-white
+          
+          className="border border-gray-600 p-2 rounded-lg flex-1 bg-gray-800 text-white resize-none
                      hover:border-blue-500 focus:border-blue-500 focus:ring-2 ring-blue-400 outline-none"
+                     
         />
         <button
           onClick={handleAddNote}
@@ -55,19 +77,22 @@ function Note() {
 
       {/* Notes List */}
       {addNote.length > 0 ? (
-        <ul className="space-y-2">
+        <ul className="space-y-2  w-full ">
           {addNote.map((item, index) => (
             <li
               key={index}
-              className="flex justify-between items-center bg-gray-800 p-2 rounded-lg max-w-screen"
+              className="flex justify-between items-start bg-gray-800 p-3 rounded-lg text-white gap-3"
             >
-              <span>{item}</span>
+              <span className="flex-1 wrap-break-word whitespace-normal overflow-hidden text-sm md:text-base leading-relaxed">{item}</span>
               <button
                 onClick={() => handleDelete(index)}
-                className="text-red-400 hover:text-red-500 font-bold"
+                className="text-white bg-red-600 hover:text-gray-800 font-bold  p-1 px-2 rounded-md"
               >
                 ✕
               </button>
+              <button onClick={()=> handelEdit(index)} 
+              className="text-white bg-blue-600 hover:text-gray-800 font-bold p-1 px-2 rounded-md"
+                >Edit</button>
             </li>
           ))}
         </ul>
